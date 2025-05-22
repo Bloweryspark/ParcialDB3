@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Menú GTA V</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
+
+<body>
+
+    <div class="menu-container">
+        <h1>Menú Principal</h1>
+        <button id="btnInsertarJugador">Insertar Jugador Aleatorio</button>
+       <button id="btnCrearLobby">Crear Lobby Aleatorio</button>
+       <button id="btnTraerDatos">Traer Jugadores y Lobbies</button>
+       <button id="btnTraerReportes">Traer Reportes</button>
+   
+   
+       <h2>Reportar jugador mañoso</h2>
+    <form id="formReporte">
+    <label for="reporter">Reportero (nombre):</label><br>
+    <input type="text" id="reporter" name="reporter" required><br>
+    <label for="reported">Reportado (nombre):</label><br>
+    <input type="text" id="reported" name="reported" required><br>
+    <label for="reason">Razón:</label><br>
+    <input type="text" id="reason" name="reason" required><br><br>
+    <button type="submit">Enviar reporte</button>
+</form>
+       </div>
+    <div id="resultados"></div>
+
+      
+        
+
+    <script>
+        document.getElementById('btnInsertarJugador').addEventListener('click', async () => {
+            try {
+                const res = await fetch('/insertar-jugador', {
+                    method: 'POST'
+                });
+
+                const text = await res.text();
+                alert(text); // Muestra el mensaje de éxito o error
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Error al insertar jugador');
+            }
+        });
+
+        document.getElementById('btnCrearLobby').addEventListener('click', async () => {
+            try {
+                const res = await fetch('/crearlobby', {
+                    method: 'POST'
+                });
+
+                const text = await res.text();
+                alert(text); // Muestra el mensaje de éxito o error
+            } catch (err) {
+                console.error('Error:', err);
+                alert('Error al crear lobby');
+            }
+        });
+
+        document.getElementById('btnTraerDatos').addEventListener('click', async () => {
+  try {
+    const res = await fetch('/traer-datos', { method: 'GET' });
+    const data = await res.json();
+
+    let html = '<h3>Jugadores</h3><ul>';
+    data.jugadores.forEach(j => {
+      html += `<li>${j.User} (ID: ${j.idPlayers})</li>`;
+    });
+    html += '</ul>';
+
+    html += '<h3>Lobbies</h3><ul>';
+    data.lobbies.forEach(l => {
+      html += `<li>${l.name} (ID: ${l.idLobby}) - Jugadores activos: ${l.ActivePlayers}</li>`;
+    });
+    html += '</ul>';
+
+    document.getElementById('resultados').innerHTML = html;
+  } catch (err) {
+    console.error(err);
+    alert('Error al traer datos');
+  }
+});
+
+document.getElementById('formReporte').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const reporter = document.getElementById('reporter').value.trim();
+  const reported = document.getElementById('reported').value.trim();
+  const reason = document.getElementById('reason').value.trim();
+
+  try {
+    const res = await fetch('/reportar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reporter, reported, reason }),
+    });
+
+    const text = await res.text();
+    alert(text);
+    e.target.reset();
+  } catch (err) {
+    console.error(err);
+    alert('Error al enviar reporte');
+  }
+});
+
+document.getElementById('btnTraerReportes').addEventListener('click', async () => {
+  try {
+    const res = await fetch('/traer-reportes', { method: 'GET' });
+    const data = await res.json();
+
+    let html = '<h3>Reportes</h3><ul>';
+    data.reportes.forEach(r => {
+      html += `<li>Reportero: ${r.Reporter} | Reportado: ${r.Reported} | Razón: ${r.Reason}</li>`;
+    });
+    html += '</ul>';
+
+    document.getElementById('resultados').innerHTML = html;
+  } catch (err) {
+    console.error(err);
+    alert('Error al traer reportes');
+  }
+});
+
+        
+        
+    </script>
+</body>
+
+</html>
